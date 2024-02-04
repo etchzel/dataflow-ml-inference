@@ -10,7 +10,7 @@ class Drawer(DoFn):
       (0, 255, 255),
       (255, 0, 255)
     ]
-    self.bucket_name = bucket_name
+    self.bucket_name = str(bucket_name)
 
 
   def setup(self):
@@ -21,7 +21,7 @@ class Drawer(DoFn):
   def process(self, element):
     import cv2
     import numpy as np
-    from datetime import datetime
+    from datetime import date
     from modules.utils.Point import Point
 
     image_blob = element.get('image_blob')
@@ -85,7 +85,7 @@ class Drawer(DoFn):
     # Upload bounded image to GCS
     try:
       filename = image_blob.split('/')[-1]
-      output_blob = self.bucket.blob(f"output_image/{datetime.utcnow()}/{filename}")
+      output_blob = self.bucket.blob(f"output_image/{date.today()}/{filename}")
       output_blob.upload_from_string(img, content_type="image/jpeg")
       result = f"Succesfully uploaded {filename} with bounding boxes to GCS"
     except:

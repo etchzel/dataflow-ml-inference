@@ -4,22 +4,22 @@ import sys
 import apache_beam as beam
 from modules.drawer import Drawer
 from modules.object_detection import ObjectDetectionHandler
-from options.options import UserOptions
+from modules.options import UserOptions
 from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.ml.inference.base import RunInference
 
 class GetImageURI(beam.DoFn):
   def __init__(self, bucket_name, prefix):
-    self.bucket_name = bucket_name
-    self.prefix = prefix
+    self.bucket_name = str(bucket_name)
+    self.prefix = str(prefix)
 
   def process(self, element):
     from google.cloud import storage
 
     client = storage.Client()
-    bucket = client.get_bucket(self.bucket_name)
-    blobs = [{"bucket": self.bucket_name, "name": blob.name} for blob in bucket.list_blobs(match_glob=f'{self.prefix}/*?')]
-    yield blobs
+    bucket = client.bucket(self.bucket_name)
+    for blob in bucket.list_blobs(match_glob=f'{self.prefix}/*?'):
+      yield {"bucket": blob.bucket.name, "name": blob.name}
   
 def main(known_args, pipeline_args):
   runner = known_args.runner
@@ -47,13 +47,16 @@ if __name__ == "__main__":
   # Use arguments
   parser = argparse.ArgumentParser()
   parser.add_argument(
-    "--runner", default="DirectRunner"
+    "--runner", default="DataflowRunner"
   )
   parser.add_argument(
-    "--staging_location", default=''
+    "--staging_location", default='gs://andi-ahr-bucket/dataflow/staging'
   )
   parser.add_argument(
-    "--temp_location", default=''
+    "--temp_location", default='gs://andi-ahr-bucket/dataflow/temp'
+  )
+  parser.add_argument(
+    "--template_location", default="gs://andi-ahr-bucket/dataflow/templates/batch-online-predict"
   )
   parser.add_argument(
     "--requirements_file", default='requirements.txt'
@@ -65,7 +68,7 @@ if __name__ == "__main__":
     "--region", default="us-central1"
   )
   parser.add_argument(
-    "--project", default=''
+    "--project", default='datalabs-int-bigdata'
   )
   known_args, pipeline_args = parser.parse_known_args()
   if known_args.runner=="DataflowRunner":
@@ -74,6 +77,9 @@ if __name__ == "__main__":
     )
     pipeline_args.extend(
       ["--temp_location="+known_args.temp_location]
+    )
+    pipeline_args.extend(
+      ["--template_location="+known_args.template_location]
     )
     pipeline_args.extend(
       ["--requirements_file="+known_args.requirements_file]
