@@ -17,7 +17,7 @@ class Drawer(DoFn):
     from google.cloud import storage
 
     self.client = storage.Client()
-    self.bucket = self.client.bucket(json.loads(os.environ['PIPELINE_OPTIONS'])['options']['bucket'])
+    self.bucket = self.client.bucket(json.loads(os.environ['PIPELINE_OPTIONS'])['options']['bucket_name'])
   
   def process(self, element):
     import cv2
