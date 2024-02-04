@@ -10,13 +10,12 @@ class Drawer(DoFn):
       (0, 255, 255),
       (255, 0, 255)
     ]
-    self.bucket_name = str(bucket_name)
-
+    self.bucket_name = bucket_name
 
   def setup(self):
     from google.cloud import storage
     self.client = storage.Client()
-    self.bucket = self.client.bucket(self.bucket_name)
+    self.bucket = self.client.bucket(self.bucket_name.get())
   
   def process(self, element):
     import cv2

@@ -10,23 +10,23 @@ from apache_beam.ml.inference.base import RunInference
 
 class GetImageURI(beam.DoFn):
   def __init__(self, bucket_name, prefix):
-    self.bucket_name = str(bucket_name)
-    self.prefix = str(prefix)
+    self.bucket_name = bucket_name
+    self.prefix = prefix
 
   def process(self, element):
     from google.cloud import storage
 
     client = storage.Client()
-    bucket = client.bucket(self.bucket_name)
-    for blob in bucket.list_blobs(match_glob=f'{self.prefix}/*?'):
+    bucket = client.bucket(self.bucket_name.get())
+    for blob in bucket.list_blobs(match_glob=f'{self.prefix.get()}/*?'):
       yield {"bucket": blob.bucket.name, "name": blob.name}
   
 def main(known_args, pipeline_args):
   runner = known_args.runner
   pipeline_options = PipelineOptions(pipeline_args, streaming=False, runner=runner)
 
-  user_options = pipeline_options.view_as(UserOptions)
   with beam.Pipeline(options=pipeline_options) as pipeline:
+    user_options = pipeline_options.view_as(UserOptions)
     predict = (
       pipeline
       | "Initialize" >> beam.Create(['init'])
