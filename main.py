@@ -9,16 +9,19 @@ from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.ml.inference.base import RunInference
 
 class GetImageURI(beam.DoFn):
-  def __init__(self, bucket_name, prefix):
-    self.bucket_name = bucket_name
-    self.prefix = prefix
+  def setup(self):
+    import os
+    import json
+
+    self.bucket_name = json.loads(os.environ['PIPELINE_OPTIONS'])['options']['bucket_name']
+    self.prefix = json.loads(os.environ['PIPELINE_OPTIONS'])['options']['prefix']
 
   def process(self, element):
     from google.cloud import storage
 
     client = storage.Client()
-    bucket = client.bucket(self.bucket_name.get())
-    for blob in bucket.list_blobs(match_glob=f'{self.prefix.get()}/*?'):
+    bucket = client.bucket(self.bucket_name)
+    for blob in bucket.list_blobs(match_glob=f'{self.prefix}/*?'):
       yield {"bucket": blob.bucket.name, "name": blob.name}
   
 def main(known_args, pipeline_args):
