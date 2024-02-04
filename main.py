@@ -33,9 +33,9 @@ def main(known_args, pipeline_args):
     predict = (
       pipeline
       | "Initialize" >> beam.Create(['init'])
-      | "Get Image URLs" >> beam.ParDo(GetImageURI(user_options.bucket_name, user_options.prefix))
+      | "Get Image URLs" >> beam.ParDo(GetImageURI())
       | "Inference" >> RunInference(model_handler=ObjectDetectionHandler())
-      | "Draw Bounding Boxes" >> beam.ParDo(Drawer(user_options.bucket_name))
+      | "Draw Bounding Boxes" >> beam.ParDo(Drawer())
       | "Print Result" >> beam.Map(print)
     )
 
