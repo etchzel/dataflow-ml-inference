@@ -1,7 +1,7 @@
 from apache_beam import DoFn
 
 class Drawer(DoFn):
-  def __init__(self, bucket_name):
+  def __init__(self):
     self.color_palette = [
       (255, 0, 0),
       (0, 255, 0),
@@ -10,13 +10,12 @@ class Drawer(DoFn):
       (0, 255, 255),
       (255, 0, 255)
     ]
-    self.bucket_name = bucket_name
 
   def setup(self):
     import json
     import os
     from google.cloud import storage
-    
+
     self.client = storage.Client()
     self.bucket = self.client.bucket(json.loads(os.environ['PIPELINE_OPTIONS'])['options']['bucket'])
   
