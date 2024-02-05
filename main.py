@@ -93,11 +93,5 @@ if __name__ == "__main__":
     pipeline_args.extend(
       ["--project="+known_args.project]
     )
-    pipeline_args.extend(
-      ["--job_name=batch-online-predict"]
-    )
-    pipeline_args.extend(
-      ["--machine_type=n2-standard-2"]
-    )
   print(known_args, pipeline_args)
   main(known_args, pipeline_args)
