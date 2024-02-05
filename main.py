@@ -9,19 +9,16 @@ from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.ml.inference.base import RunInference
 
 class GetImageURI(beam.DoFn):
-  def setup(self):
-    import os
-    import json
-
-    self.bucket_name = json.loads(os.environ['PIPELINE_OPTIONS'])['options']['bucket_name']
-    self.prefix = json.loads(os.environ['PIPELINE_OPTIONS'])['options']['prefix']
+  def __init__(self, bucket_name, prefix):
+    self.bucket_name = bucket_name
+    self.prefix = prefix
 
   def process(self, element):
     from google.cloud import storage
 
     client = storage.Client()
-    bucket = client.bucket(self.bucket_name)
-    for blob in bucket.list_blobs(match_glob=f'{self.prefix}/*?'):
+    bucket = client.bucket(self.bucket_name.get())
+    for blob in bucket.list_blobs(match_glob=f'{self.prefix.get()}/*?'):
       yield {"bucket": blob.bucket.name, "name": blob.name}
   
 def main(known_args, pipeline_args):
@@ -33,9 +30,9 @@ def main(known_args, pipeline_args):
     predict = (
       pipeline
       | "Initialize" >> beam.Create(['init'])
-      | "Get Image URLs" >> beam.ParDo(GetImageURI())
+      | "Get Image URLs" >> beam.ParDo(GetImageURI(user_options.bucket_name, user_options.prefix))
       | "Inference" >> RunInference(model_handler=ObjectDetectionHandler())
-      | "Draw Bounding Boxes" >> beam.ParDo(Drawer())
+      | "Draw Bounding Boxes" >> beam.ParDo(Drawer(user_options.bucket_name))
       | "Print Result" >> beam.Map(print)
     )
 
