@@ -7,9 +7,5 @@ setuptools.setup(
     'apache-beam[gcp]==2.53.0',
     'opencv-python-headless==4.9.0.80',
   ],
-  package_dir={
-    "main": ".",
-    "modules": "modules"
-  },
-  packages=["main", "modules"]
+  packages=setuptools.find_packages()
 )
