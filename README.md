@@ -59,6 +59,15 @@
   pip install opencv-python-headless==4.9.0.80
   ```
 
+  Verify the following packages are installed
+
+  ```bash
+  pip show google-cloud-vision
+  pip show google-cloud-storage
+  pip show apache-beam
+  pip show opencv-python-headless
+  ```
+
 - Next clone the git repo:
 
   ```bash
