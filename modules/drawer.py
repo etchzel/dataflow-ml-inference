@@ -1,7 +1,7 @@
 from apache_beam import DoFn
 
 class Drawer(DoFn):
-  def __init__(self, bucket_name):
+  def __init__(self, bucket_name, output_prefix):
     self.color_palette = [
       (255, 0, 0),
       (0, 255, 0),
@@ -11,6 +11,7 @@ class Drawer(DoFn):
       (255, 0, 255)
     ]
     self.bucket_name = bucket_name
+    self.output_prefix = output_prefix
 
   def setup(self):
     from google.cloud import storage
@@ -70,7 +71,7 @@ class Drawer(DoFn):
 
       # Draw Text Field
       img = cv2.rectangle(img, top_left.adjust_y(-20), top_left.adjust_x(w), color=self.color_palette[palette_count], thickness=-1)
-      img = cv2.putText(img, label, top_left.adjust_y(-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1)
+      img = cv2.putText(img, label, top_left.adjust_y(-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1)
 
       # Rotate over color palettes
       palette_count += 1
@@ -84,7 +85,7 @@ class Drawer(DoFn):
     # Upload bounded image to GCS
     try:
       filename = image_blob.split('/')[-1]
-      output_blob = self.bucket.blob(f"output_image/{date.today()}/{filename}")
+      output_blob = self.bucket.blob(f"{self.output_prefix.get()}/{date.today()}/{filename}")
       output_blob.upload_from_string(img, content_type="image/jpeg")
       result = f"Succesfully uploaded {filename} with bounding boxes to GCS"
     except:
