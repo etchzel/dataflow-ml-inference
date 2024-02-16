@@ -32,7 +32,7 @@ def main(known_args, pipeline_args):
       | "Initialize" >> beam.Create(['init'])
       | "Get Image URLs" >> beam.ParDo(GetImageURI(user_options.bucket_name, user_options.prefix))
       | "Inference" >> RunInference(model_handler=ObjectDetectionHandler())
-      | "Draw Bounding Boxes" >> beam.ParDo(Drawer(user_options.bucket_name))
+      | "Draw Bounding Boxes" >> beam.ParDo(Drawer(user_options.bucket_name, user_options.output))
       | "Print Result" >> beam.Map(print)
     )
 
@@ -50,13 +50,13 @@ if __name__ == "__main__":
     "--runner", default="DataflowRunner"
   )
   parser.add_argument(
-    "--staging_location", default='gs://andi-ahr-bucket/dataflow/staging'
+    "--staging_location", default='gs://trainer_gcs_001/dataflow/staging'
   )
   parser.add_argument(
-    "--temp_location", default='gs://andi-ahr-bucket/dataflow/temp'
+    "--temp_location", default='gs://trainer_gcs_001/dataflow/temp'
   )
   parser.add_argument(
-    "--template_location", default="gs://andi-ahr-bucket/dataflow/templates/batch-online-predict"
+    "--template_location", default="gs://trainer_gcs_001/dataflow/templates/batch-online-predict"
   )
   parser.add_argument(
     "--requirements_file", default='requirements.txt'
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     "--region", default="us-central1"
   )
   parser.add_argument(
-    "--project", default='datalabs-int-bigdata'
+    "--project", default='engineering-training-413102'
   )
   known_args, pipeline_args = parser.parse_known_args()
   if known_args.runner=="DataflowRunner":
